@@ -24,7 +24,6 @@ class mainForm(QMainWindow):
         self.model = QStandardItemModel()
         self.myTaskList.setGeometry(10, 50, 480, 270)
 
-        reportButton = QtGui.QPushButton('Отчёт',self)
         createTaskButton = QtGui.QPushButton('Новая задача',self)
         self.viewTaskButton = QtGui.QPushButton('Просмотр',self)
         settingsButton = QtGui.QPushButton('Параметры',self)
@@ -32,10 +31,9 @@ class mainForm(QMainWindow):
         self.activeTaskButton = QtGui.QPushButton('Активные задачи',self)
         self.doneTaskButton = QtGui.QPushButton('Выполненные задачи',self)
 
-        reportButton.setGeometry(390, 360, 100, 35)
         createTaskButton.setGeometry(10, 325, 100, 70)
         self.viewTaskButton.setGeometry(130, 325, 100, 70)
-        settingsButton.setGeometry(280, 360, 100, 35)       
+        settingsButton.setGeometry(390, 360, 100, 35)       
 
         self.activeTaskButton.setGeometry(30, 10, 190, 35)
         self.doneTaskButton.setGeometry(280, 10, 190, 35)
@@ -47,8 +45,6 @@ class mainForm(QMainWindow):
 
         self.activeTaskButton.clicked.connect(lambda: self.getTasklist('active'))
         self.doneTaskButton.clicked.connect(lambda: self.getTasklist('done'))
-        reportButton.setEnabled(False)
-#        reportButton.clicked.connect(lambda: self.close())
         createTaskButton.clicked.connect(lambda: self.addNewTask())
         self.viewTaskButton.clicked.connect(lambda: self.viewTaskDetails(selectedValue))
         self.connect(self.myTaskList, QtCore.SIGNAL("clicked(QModelIndex)"), self.valueSelected)
@@ -70,7 +66,6 @@ class mainForm(QMainWindow):
             self.model.setHorizontalHeaderLabels(("Наименование задачи;Срок исполнения;До веремени").split(";"))
             self.activeTaskButton.setEnabled(False)
             self.doneTaskButton.setEnabled(True)
-            #for task in collection.aggregate({'$sort':{"_id" : 1}}):
             for task in collection.find({'task_status' : status}):
                 row = []
                 item = QStandardItem(task['taskname'])
@@ -221,12 +216,11 @@ class taskDetailsWindow(QMainWindow):
         self.model.clear()
         self.model.setColumnCount(2)
         self.model.setHorizontalHeaderLabels(("Дата;Комментарий").split(";"))
-      
-        #self.myCommentsList.resizeColumnToContents(0)
-        
-        #self.myCommentsList.setColumnWidth(0, 120)
-        #self.myCommentsList.setColumnWidth(1, 358)
-        
+
+        self.reportButton = QtGui.QPushButton('Отчёт',self)
+        self.reportButton.setGeometry(390, 360, 100, 35)
+        self.reportButton.setVisible(False)
+             
         taskNameLabel = QtGui.QLabel('Наименование задачи:', self)
         descriptionLabel = QtGui.QLabel('Описание задачи:', self)
         datetimeLabel = QtGui.QLabel('Срок исполнения:', self)
@@ -251,6 +245,12 @@ class taskDetailsWindow(QMainWindow):
         
         self.commitButton.setGeometry(390, 360, 100, 35)
         self.closeTaskButton.setGeometry(10, 360, 100, 35)
+
+        if task['task_status'] == 'done':
+            self.commitButton.setVisible(False)
+            self.commentField.setVisible(False)
+            self.closeTaskButton.setVisible(False)
+            self.reportButton.setVisible(True)
        
         for comm in collection.find({'taskname' : selectedValue}, {"comments" : 1}):
             if len(comm) > 1:
